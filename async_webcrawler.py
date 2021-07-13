@@ -98,7 +98,6 @@ class crawler(threading.Thread):
                     "topScore": scores[1],
                     "ans": accepted_ans
                     }    
-                print(data['ans'])
                 self.payload.data.append(data)
                 self.payload.COUNT +=1
             except Exception as error:
@@ -118,7 +117,7 @@ if __name__ == '__main__':
     while threading.active_count() >1:
         time.sleep(0.1)
         print(threading.active_count())
-    raise
+   
     pl.sort_data()
     pl.print_data()
     gc.collect()
