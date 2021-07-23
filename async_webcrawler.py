@@ -1,4 +1,3 @@
-#!/Users/eddie/opt/anaconda3/bin/python3
 from bs4 import BeautifulSoup
 import requests
 import threading
