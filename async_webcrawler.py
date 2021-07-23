@@ -1,4 +1,3 @@
-#!/Users/eddie/opt/anaconda3/bin/python3
 from bs4 import BeautifulSoup
 import requests
 import threading
@@ -14,23 +13,21 @@ HEADER = {
 class payload:
     url, data = [] , []
     COUNT, DROPPED, UNRELATED = (0,0,0)
-    def __init__(self, keyword:str, search_type:str = 'top', upvote:int = 10, page:int = 5):
+    def __init__(self, keyword:str, search_type:str = 'top', upvote:int = 1, page:int = 5):
         self.keyword = keyword
         self.search_type = search_type
         self.upvote = int(upvote)
         self.page = int(page)
-    def google_search(self):
-        print("Proccessing search parameters and gathering all the links...")
-        payload= {
-        'start' : '0',
-        'num' : self.page*10,
-        }
-        url = (f"https://www.google.com/search?q={'+'.join(self.keyword.split(' '))}+site%3A+www.stackoverflow.com")
-        res = requests.get(url,params = payload, headers=HEADER)
-        soup = BeautifulSoup(res.text,'lxml')
-        # element type = bs4 tag. Include dict indexing method
-        self.url = [link['href'] for link in soup.select('div[class="yuRUbf"]>a')]
-        soup.decompose()
+
+    def __repr__(self) -> str:
+        return f'''------- Statistics -------------------
+            Searched term: "{pl.keyword}""
+            Minimun upvotes : {pl.upvote}
+            Links crawled: {len(pl.url)}
+            Links below minimum upload: {pl.DROPPED}
+            Links unrelated: {pl.UNRELATED}
+            *Links accept: {pl.COUNT}*
+            Total time: {round(time.perf_counter() - start,2)} seconds \n'''
 
     def sort_data(self):
         self.data= sorted(self.data, key = lambda item: int(item['topScore']),reverse = True)
@@ -68,6 +65,20 @@ class crawler(threading.Thread):
                 counter =0
         return accepted_ans
 
+    @staticmethod 
+    def google_search(pl:payload):
+        print("Proccessing search parameters and gathering all the links...")
+        payload= {
+        'start' : '0',
+        'num' : pl.page*10,
+        }
+        url = (f"https://www.google.com/search?q={'+'.join(pl.keyword.split(' '))}+site%3A+www.stackoverflow.com")
+        res = requests.get(url,params = payload, headers=HEADER)
+        soup = BeautifulSoup(res.text,'lxml')
+        # element type = bs4 tag. Include dict indexing method
+        pl.url = [link['href'] for link in soup.select('div[class="yuRUbf"]>a')]
+        soup.decompose()
+
     def run(self):
         soup =""
         while True:
@@ -98,6 +109,7 @@ class crawler(threading.Thread):
                     "topScore": scores[1],
                     "ans": accepted_ans
                     }    
+
                 self.payload.data.append(data)
                 self.payload.COUNT +=1
             except Exception as error:
@@ -110,24 +122,16 @@ class crawler(threading.Thread):
 if __name__ == '__main__':
     start = time.perf_counter()
     pl = payload(*sys.argv[1:])
-    pl.google_search()
+    crawler.google_search(pl)
 
     for link in pl.url:
         crawler(link, pl).start()
     while threading.active_count() >1:
         time.sleep(0.1)
         print(threading.active_count())
-   
     pl.sort_data()
     pl.print_data()
     gc.collect()
-    print(f'''------- Statistics -------------------
-            Searched term: "{pl.keyword}""
-            Minimun upvotes : {pl.upvote}
-            Links crawled: {len(pl.url)}
-            Links below minimum upload: {pl.DROPPED}
-            Links unrelated: {pl.UNRELATED}
-            *Links accept: {pl.COUNT}*
-            Total time: {round(time.perf_counter() - start,2)} seconds''')
+    print(pl)
 
 
