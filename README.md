@@ -1,4 +1,4 @@
-# Super Stackoverflow Searcher (threading up to 100 urls at once)
+# Stackoverflow best answers finder (threading up to 100 urls at once)
 
 ## Table of contents
 * [Intro / General info](#general-info)
